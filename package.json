@@ -1,0 +1,17 @@
+{
+  "name": "bvs-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.x.x",
+    "express": "^5.x.x",
+    "googleapis": "^144.x.x",
+    "uuid": "^11.x.x",
+    "exceljs": "^4.x.x"
+  }
+}
