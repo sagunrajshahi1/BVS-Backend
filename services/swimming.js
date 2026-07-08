@@ -304,7 +304,101 @@ async function markNoteFixed(data) {
     };
 
 }
+async function getLaneSummary(classes) {
 
+    const today = new Date().toLocaleDateString("en-CA");
+
+    // Today's attendance
+    const attendanceResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: "AttendanceLog!A:G"
+    });
+
+    // Swimming Progress
+    const progressResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: "SwimmingProgress!A:I"
+    });
+
+    const attendance = attendanceResponse.data.values || [];
+    const progress = progressResponse.data.values || [];
+
+    const presentCodes = new Set();
+
+    for (let i = 1; i < attendance.length; i++) {
+
+        if (
+            attendance[i][0] === today &&
+            attendance[i][5] === "Present"
+        ) {
+
+            presentCodes.add(attendance[i][2]);
+
+        }
+
+    }
+
+    const laneSummary = {
+        1:0,
+        2:0,
+        3:0,
+        4:0,
+        5:0,
+        6:0
+    };
+
+    const students = [];
+
+    for (let i = 1; i < progress.length; i++) {
+
+        const code = progress[i][0];
+
+        if (!presentCodes.has(code)) continue;
+
+        const student = await searchStudent(code);
+
+        if (!student) continue;
+
+        if (
+            classes.length &&
+            !classes.includes(student.class)
+        ) continue;
+
+        const lane = progress[i][2] || "";
+
+        if (laneSummary[lane] !== undefined) {
+
+            laneSummary[lane]++;
+
+        }
+
+        students.push({
+
+            code,
+
+            name: student.name,
+
+            class: student.class,
+
+            lane
+
+        });
+
+    }
+
+    return {
+
+        today,
+
+        total: students.length,
+
+        laneSummary,
+
+        students
+
+    };
+
+}
 module.exports = {
 
     searchStudent,
@@ -317,6 +411,8 @@ module.exports = {
 
     getNotes,
 
-    markNoteFixed
+    markNoteFixed,
+
+    getLaneSummary
 
 };

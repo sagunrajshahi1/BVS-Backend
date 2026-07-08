@@ -13,7 +13,9 @@ const {
 
     getNotes,
 
-    markNoteFixed
+    markNoteFixed,
+
+    getLaneSummary
 
 } = require("../services/swimming");
 
@@ -148,5 +150,34 @@ router.put("/note", async (req, res) => {
     }
 
 });
+
+router.post("/lane-summary", async (req, res) => {
+
+    try {
+
+        const result = await getLaneSummary(
+
+            req.body.classes || []
+
+        );
+
+        res.json(result);
+
+    }
+
+    catch(err){
+
+        res.status(500).json({
+
+            success:false,
+
+            message:err.message
+
+        });
+
+    }
+
+});
+
 
 module.exports = router;
