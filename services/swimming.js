@@ -177,11 +177,41 @@ async function saveProgress(data) {
 
 async function addNote(data) {
 
+    const today = new Date().toLocaleDateString("en-CA");
+
+    await sheets.spreadsheets.values.append({
+
+        spreadsheetId,
+
+        range: "SwimmingNotes!A:I",
+
+        valueInputOption: "USER_ENTERED",
+
+        requestBody: {
+
+            values: [[
+
+                today,               // Date
+                data.code,           // Code
+                data.name,           // Name
+                data.stroke,         // Stroke
+                data.skill,          // Skill
+                "Pending",           // Status
+                data.note,           // Note
+                "",                  // Fixed Date
+                data.coach           // Coach
+
+            ]]
+
+        }
+
+    });
+
     return {
 
         success: true,
 
-        message: "Note saving will be implemented next."
+        message: "Note Saved"
 
     };
 
@@ -189,17 +219,87 @@ async function addNote(data) {
 
 async function getNotes(code) {
 
-    return [];
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range: "SwimmingNotes!A:I"
+
+    });
+
+    const rows = response.data.values || [];
+
+    const notes = [];
+
+    for (let i = 1; i < rows.length; i++) {
+
+        if ((rows[i][1] || "").toUpperCase() === code.toUpperCase()) {
+
+            notes.push({
+
+                row: i + 1,
+
+                date: rows[i][0] || "",
+
+                code: rows[i][1] || "",
+
+                name: rows[i][2] || "",
+
+                stroke: rows[i][3] || "",
+
+                skill: rows[i][4] || "",
+
+                status: rows[i][5] || "",
+
+                note: rows[i][6] || "",
+
+                fixed: rows[i][7] || "",
+
+                coach: rows[i][8] || ""
+
+            });
+
+        }
+
+    }
+
+    return notes;
 
 }
 
 async function markNoteFixed(data) {
 
+    const today = new Date().toLocaleDateString("en-CA");
+
+    await sheets.spreadsheets.values.update({
+
+        spreadsheetId,
+
+        range: `SwimmingNotes!F${data.row}:H${data.row}`,
+
+        valueInputOption: "USER_ENTERED",
+
+        requestBody: {
+
+            values: [[
+
+                "Fixed",
+
+                data.note,
+
+                today
+
+            ]]
+
+        }
+
+    });
+
     return {
 
         success: true,
 
-        message: "Note update will be implemented next."
+        message: "Marked as Fixed"
 
     };
 
