@@ -14,17 +14,17 @@ router.get("/", async (req,res)=>{
 
 });
 
-router.post("/", async(req,res)=>{
+router.post("/", async (req, res) => {
 
-    const student=await addStudent(req.body);
+    const student = await addStudent(req.body);
 
     res.json(student);
 
 });
 
-router.put("/:code",async(req,res)=>{
+router.put("/:code", async (req, res) => {
 
-    const student=await updateStudent(
+    const student = await updateStudent(
 
         req.params.code,
 
@@ -36,9 +36,9 @@ router.put("/:code",async(req,res)=>{
 
 });
 
-router.delete("/:code",async(req,res)=>{
+router.delete("/:code", async (req, res) => {
 
-    const student=await deleteStudent(
+    const student = await deleteStudent(
 
         req.params.code
 
@@ -48,4 +48,4 @@ router.delete("/:code",async(req,res)=>{
 
 });
 
-module.exports=router;
+module.exports = router;

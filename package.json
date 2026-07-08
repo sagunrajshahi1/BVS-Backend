@@ -9,9 +9,12 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.x.x",
+    "exceljs": "^4.x.x",
     "express": "^5.x.x",
     "googleapis": "^144.x.x",
-    "uuid": "^11.x.x",
-    "exceljs": "^4.x.x"
+    "uuid": "^11.x.x"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

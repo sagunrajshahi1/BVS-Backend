@@ -2,30 +2,81 @@ const sheets = require("../config/google");
 const { getMergedClass } = require("./classMap");
 
 const spreadsheetId = process.env.SPREADSHEET_ID;
+let studentCache = [];
+
+let cacheLoaded = false;
+
+async function loadStudentCache() {
+
+    if (cacheLoaded) {
+
+        return;
+
+    }
+
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range: "RawData!A:D"
+
+    });
+
+    studentCache = response.data.values || [];
+
+    cacheLoaded = true;
+
+}
+const processingStudents = new Set();
+
+function lockStudent(code){
+
+    code = String(code).trim().toUpperCase();
+
+    if(processingStudents.has(code)){
+
+        return false;
+
+    }
+
+    processingStudents.add(code);
+
+    return true;
+
+}
+
+function unlockStudent(code){
+
+    code = String(code).trim().toUpperCase();
+
+    processingStudents.delete(code);
+
+}
 
 async function findStudent(code) {
 
-    const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: "RawData!A:D"
-    });
+    await loadStudentCache();
 
-    const rows = response.data.values || [];
+    const scannedCode = String(code || "").trim().toUpperCase();
 
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = 1; i < studentCache.length; i++) {
 
-        const row = rows[i];
+        const row = studentCache[i];
 
         const studentCode = String(row[1] || "").trim().toUpperCase();
-const scannedCode = String(code || "").trim().toUpperCase();
 
-if (studentCode === scannedCode) {
+        if (studentCode === scannedCode) {
 
             return {
+
                 sno: row[0],
+
                 code: studentCode,
+
                 name: row[2],
+
                 class: row[3]
+
             };
 
         }
@@ -423,6 +474,10 @@ module.exports = {
 
     markPresent,
 
-    updateDashboard
+    updateDashboard,
+
+    lockStudent,
+
+    unlockStudent
 
 };

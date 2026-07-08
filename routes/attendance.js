@@ -17,7 +17,11 @@ const {
 
     markPresent,
 
-    updateDashboard
+    updateDashboard,
+
+    lockStudent,
+
+    unlockStudent
 
 } = require("../services/sheets");
 
@@ -27,7 +31,17 @@ router.post("/", async (req, res) => {
 
         const { code, device } = req.body;
 
-        
+        if(!lockStudent(code)){
+
+    return res.json({
+
+        success:false,
+
+        message:"Attendance is already being processed."
+
+    });
+
+}
 
         const student = await findStudent(code);
 
@@ -93,17 +107,22 @@ res.json({
 
     catch(err){
 
-        console.error(err);
+    console.error(err);
 
-        res.status(500).json({
+    res.status(500).json({
 
-            success:false,
+        success:false,
 
-            message:err.message
+        message:err.message
 
-        });
+    });
 
-    }
+}
+finally{
+
+    unlockStudent(req.body.code);
+
+}
 
 });
 
