@@ -7,6 +7,7 @@ const studentRoute=require("./routes/student");
 const reportRoute=require("./routes/report");
 const manualRoute=require("./routes/manualAttendance");
 const dashboardRoute = require("./routes/dashboard");
+const swimmingRoute = require("./routes/swimming");
 
 
 console.log("Loading login route...");
@@ -37,6 +38,8 @@ app.use("/students",studentRoute);
 app.use("/reports",reportRoute);
 app.use("/manual",manualRoute);
 app.use("/dashboard", dashboardRoute);
+app.use("/swimming", swimmingRoute);
+
 
 const PORT = process.env.PORT || 3000;
 
