@@ -151,15 +151,11 @@ router.put("/note", async (req, res) => {
 
 });
 
-router.post("/lane-summary", async (req, res) => {
+router.get("/lane-summary", async (req, res) => {
 
     try {
 
-        const result = await getLaneSummary(
-
-            req.body.classes || []
-
-        );
+        const result = await getLaneSummary([]);
 
         res.json(result);
 
