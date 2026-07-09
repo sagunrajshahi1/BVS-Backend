@@ -1,6 +1,7 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+
 
 const attendanceRoute = require("./routes/attendance");
 const studentRoute=require("./routes/student");
