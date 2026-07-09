@@ -8,6 +8,7 @@ const reportRoute=require("./routes/report");
 const manualRoute=require("./routes/manualAttendance");
 const dashboardRoute = require("./routes/dashboard");
 const swimmingRoute = require("./routes/swimming");
+const authRoutes = require("./routes/auth");
 
 
 console.log("Loading login route...");

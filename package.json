@@ -7,11 +7,13 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.x.x",
     "exceljs": "^4.x.x",
     "express": "^5.x.x",
     "googleapis": "^144.x.x",
+    "jsonwebtoken": "^9.0.3",
     "uuid": "^11.x.x"
   },
   "devDependencies": {
