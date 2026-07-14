@@ -15,9 +15,19 @@ const {
 
     markNoteFixed,
 
-    getLaneSummary
+    getLaneSummary,
+
+    changeLane,
+
+    getStudentLane
 
 } = require("../services/swimming");
+
+const {
+
+    updateStudentLane
+
+} = require("../services/sheets");
 
 router.get("/student/:code", async (req, res) => {
 
@@ -175,5 +185,96 @@ router.get("/lane-summary", async (req, res) => {
 
 });
 
+router.get("/lane/:lane", async (req, res) => {
+
+    try{
+
+        const summary = await getLaneSummary([]);
+
+        const lane = req.params.lane;
+
+        const students = summary.students.filter(s =>
+
+            s.lane == lane
+
+        );
+
+        res.json({
+
+            success:true,
+
+            lane,
+
+            students
+
+        });
+
+    }
+
+    catch(err){
+
+        res.status(500).json({
+
+            success:false,
+
+            message:err.message
+
+        });
+
+    }
+
+});
+
+router.post("/change-lane", async (req, res) => {
+
+    try{
+
+        const result = await changeLane(req.body);
+
+        res.json(result);
+
+    }
+
+    catch(err){
+
+        res.status(500).json({
+
+            success:false,
+
+            message:err.message
+
+        });
+
+    }
+
+});
+
+router.get("/lane/:code", async (req, res) => {
+
+    try{
+
+        const result = await getStudentLane(
+
+            req.params.code
+
+        );
+
+        res.json(result);
+
+    }
+
+    catch(err){
+
+        res.status(500).json({
+
+            success:false,
+
+            message:err.message
+
+        });
+
+    }
+
+});
 
 module.exports = router;

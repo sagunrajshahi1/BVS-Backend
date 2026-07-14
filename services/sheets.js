@@ -18,7 +18,7 @@ async function loadStudentCache() {
 
         spreadsheetId,
 
-        range: "RawData!A:D"
+        range: "RawData!A:E"
 
     });
 
@@ -240,7 +240,7 @@ async function loadClassStudents(sheetName) {
 
     const raw = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: "RawData!A:D"
+        range: "RawData!A:E"
     });
 
     const rows = raw.data.values || [];
@@ -389,7 +389,7 @@ async function updateDashboard() {
 
         spreadsheetId,
 
-        range: "RawData!A:D"
+        range: "RawData!A:E"
 
     });
 
@@ -458,6 +458,167 @@ async function updateDashboard() {
 
 }
 
+async function getTodayAttendanceCodes() {
+
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range: "AttendanceLog!A:F"
+
+    });
+
+    const rows = response.data.values || [];
+
+    const now = new Date();
+
+const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kathmandu"
+}).format(now);
+
+    console.log("Today:", today);
+
+    const codes = [];
+
+    for (let i = 1; i < rows.length; i++) {
+
+        console.log(
+            "Sheet Date:",
+            rows[i][0],
+            "Code:",
+            rows[i][2]
+        );
+
+        if (String(rows[i][0]).trim() === today) {
+
+            codes.push(String(rows[i][2]).trim());
+
+        }
+
+    }
+
+    console.log("Present Codes:", codes);
+
+    return codes;
+
+}
+async function isStudentPresentToday(code) {
+
+    const codes = await getTodayAttendanceCodes();
+
+    return codes.includes(code);
+
+}
+
+async function getStudentsByClass(className){
+
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range:"RawData!A:E"
+
+    });
+
+    const rows = response.data.values || [];
+console.log("Session Class:", className);
+console.log("Total RawData rows:", rows.length);
+    const students = [];
+
+    let allowedSections = [];
+
+    // BVS merged classes
+    if(className === "4ABC") allowedSections = ["4A","4B","4C"];
+    else if(className === "5ABC") allowedSections = ["5A","5B","5C"];
+    else if(className === "6ABC") allowedSections = ["6A","6B","6C"];
+    else if(className === "7ABC") allowedSections = ["7A","7B","7C"];
+    else if(className === "8AB") allowedSections = ["8A","8B"];
+    else if(className === "8CD") allowedSections = ["8C","8D"];
+    else if(className === "9AB") allowedSections = ["9A","9B"];
+    else if(className === "9CD") allowedSections = ["9C","9D"];
+    else if(className === "10AB") allowedSections = ["10A","10B"];
+    else if(className === "10CDE") allowedSections = ["10C","10D","10E"];
+
+    // RAI or single class
+    else allowedSections = [className];
+
+    for(let i=1;i<rows.length;i++){
+
+        const studentClass = String(rows[i][3]).trim();
+
+        if(!allowedSections.includes(studentClass)){
+
+            continue;
+
+        }
+
+        students.push({
+
+    code: rows[i][1],
+
+    name: rows[i][2],
+
+    class: studentClass,
+
+    lane: rows[i][4] || ""
+
+});
+    }
+
+    students.sort((a,b)=>
+
+        a.name.localeCompare(b.name)
+
+    );
+console.log("Matched Students:", students.length);
+    return students;
+
+}
+
+async function updateStudentLane(code, lane){
+
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range:"RawData!A:E"
+
+    });
+
+    const rows = response.data.values || [];
+
+    for(let i=1;i<rows.length;i++){
+
+        if(rows[i][1] !== code){
+
+            continue;
+
+        }
+
+        await sheets.spreadsheets.values.update({
+
+            spreadsheetId,
+
+            range:`RawData!E${i+1}`,
+
+            valueInputOption:"USER_ENTERED",
+
+            requestBody:{
+
+                values:[[lane]]
+
+            }
+
+        });
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
 module.exports = {
 
     findStudent,
@@ -478,6 +639,14 @@ module.exports = {
 
     lockStudent,
 
-    unlockStudent
+    unlockStudent,
+
+    getTodayAttendanceCodes,
+
+isStudentPresentToday,
+
+getStudentsByClass,
+
+updateStudentLane
 
 };

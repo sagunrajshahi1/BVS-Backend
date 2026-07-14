@@ -32,45 +32,65 @@ async function getRawStudents(){
 
 async function dailyReport(date){
 
-    const attendance=await getAttendanceLog();
+    const attendance = await getAttendanceLog();
 
-    const students=await getRawStudents();
+    const students = await getRawStudents();
 
-    let report=[];
+    const presentCodes = new Set();
 
-    for(let i=1;i<attendance.length;i++){
+    const report = [];
 
-        if(attendance[i][0]==date){
+    for(let i = 1; i < attendance.length; i++){
 
-            report.push({
+        if(attendance[i][0] !== date) continue;
 
-                date:attendance[i][0],
+        if((attendance[i][5] || "") !== "Present") continue;
 
-                time:attendance[i][1],
+        const code = attendance[i][2];
 
-                code:attendance[i][2],
+        if(presentCodes.has(code)) continue;
 
-                name:attendance[i][3],
+        presentCodes.add(code);
 
-                class:attendance[i][4],
+        report.push({
 
-                status:attendance[i][5]
+            date: attendance[i][0],
 
-            });
+            time: attendance[i][1],
 
-        }
+            code: attendance[i][2],
+
+            name: attendance[i][3],
+
+            class: attendance[i][4],
+
+            status: attendance[i][5]
+
+        });
 
     }
 
+    const totalStudents = students.length - 1;
+
+    const present = presentCodes.size;
+
+    const absent = totalStudents - present;
+
+    const classes = new Set();
+
+    report.forEach(r=>classes.add(r.class));
+
     return{
 
-        totalStudents:students.length-1,
+        totalStudents,
 
-        present:report.length,
+        present,
 
-        absent:(students.length-1)-report.length,
+        absent,
 
-        records:report
+        classes: classes.size,
+
+        records: report
 
     };
 

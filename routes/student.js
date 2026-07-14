@@ -8,9 +8,36 @@ const {
     deleteStudent
 } = require("../services/student");
 
-router.get("/", async (req,res)=>{
+router.get("/", async (req, res) => {
 
     res.json(await getStudents());
+
+});
+
+// NEW - Get one student by code
+router.get("/:code", async (req, res) => {
+
+    const students = await getStudents();
+
+    const student = students.find(
+
+        s => s.code === req.params.code
+
+    );
+
+    if (!student) {
+
+        return res.status(404).json({
+
+            success: false,
+
+            message: "Student not found."
+
+        });
+
+    }
+
+    res.json(student);
 
 });
 

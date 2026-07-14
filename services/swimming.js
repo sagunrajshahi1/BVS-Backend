@@ -2,6 +2,7 @@ const sheets = require("../config/google");
 const { getStudents } = require("./student");
 
 const spreadsheetId = process.env.SPREADSHEET_ID;
+const {updateStudentLane} = require("./sheets");
 
 async function searchStudent(code) {
 
@@ -364,27 +365,41 @@ async function getLaneSummary(classes) {
             !classes.includes(student.class)
         ) continue;
 
-        const lane = progress[i][2] || "";
+        const lane = String(progress[i][2] || "").trim();
 
-        if (laneSummary[lane] !== undefined) {
+console.log(
+    "Student:",
+    code,
+    "Lane:",
+    lane,
+    "Present:",
+    presentCodes.has(code)
+);
 
-            laneSummary[lane]++;
+if (["1", "2", "3", "4", "5", "6"].includes(lane)) {
 
-        }
+    laneSummary[lane]++;
 
-        students.push({
+}
 
-            code,
+students.push({
 
-            name: student.name,
+    code,
 
-            class: student.class,
+    name: student.name,
 
-            lane
+    class: student.class,
 
-        });
+    lane
+
+});
+
 
     }
+
+    console.log("Lane Summary:", laneSummary);
+
+console.log("Students:", students);
 
     return {
 
@@ -399,7 +414,156 @@ async function getLaneSummary(classes) {
     };
 
 }
-module.exports = {
+
+async function changeLane({ code, newLane, reason }) {
+
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range: "SwimmingProgress!A:K"
+
+    });
+
+    const rows = response.data.values || [];
+
+    for (let i = 1; i < rows.length; i++) {
+
+        if (rows[i][0] !== code) continue;
+
+        const currentLane = rows[i][2] || "";
+
+        rows[i][2] = newLane;               // C - Current Lane
+        rows[i][9] = currentLane;           // J - Previous Lane
+        rows[i][10] = reason || "";         // K - Reason
+        rows[i][8] = new Date().toLocaleString(
+
+            "en-US",
+
+            {
+
+                timeZone: "Asia/Kathmandu"
+
+            }
+
+        );
+        const rawData = await sheets.spreadsheets.values.get({
+
+    spreadsheetId,
+
+    range: "RawData!A:E"
+
+});
+
+const rawRows = rawData.data.values || [];
+
+for(let r=1;r<rawRows.length;r++){
+
+    if(rawRows[r][1] !== code){
+
+        continue;
+
+    }
+
+    rawRows[r][4] = newLane;
+
+    await sheets.spreadsheets.values.update({
+
+        spreadsheetId,
+
+        range:`RawData!E${r+1}`,
+
+        valueInputOption:"USER_ENTERED",
+
+        requestBody:{
+
+            values:[[newLane]]
+
+        }
+
+    });
+
+    break;
+
+}
+                                  // I - Updated
+
+        await sheets.spreadsheets.values.update({
+
+            spreadsheetId,
+
+            range: `SwimmingProgress!A${i + 1}:K${i + 1}`,
+
+            valueInputOption: "USER_ENTERED",
+
+            requestBody: {
+
+                values: [rows[i]]
+
+            }
+
+        });
+
+        // Update RawData current lane
+        await updateStudentLane(code, newLane);
+
+        return {
+
+            success: true
+
+        };
+
+    }
+
+    return {
+
+        success: false,
+
+        message: "Student not found."
+
+    };
+
+}
+
+async function getStudentLane(code){
+
+    const response = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+
+        range:"SwimmingProgress!A:K"
+
+    });
+
+    const rows=response.data.values||[];
+
+    for(let i=1;i<rows.length;i++){
+
+        if((rows[i][0]||"").toUpperCase()===code.toUpperCase()){
+
+            return{
+
+                lane:rows[i][2]||"",
+
+                previousLane:rows[i][9]||""
+
+            };
+
+        }
+
+    }
+
+    return{
+
+        lane:"",
+
+        previousLane:""
+
+    };
+
+}
+
+module.exports={
 
     searchStudent,
 
@@ -413,6 +577,10 @@ module.exports = {
 
     markNoteFixed,
 
-    getLaneSummary
+    getLaneSummary,
+
+    changeLane,
+
+    getStudentLane
 
 };

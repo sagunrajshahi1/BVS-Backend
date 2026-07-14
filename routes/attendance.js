@@ -93,13 +93,59 @@ await addAttendance(student, device);
 
 await updateDashboard();
 
+const axios = require("axios");
+
+try {
+
+    await axios.post(
+
+        "http://localhost:3000/swimming-session/present",
+
+        {
+
+            code: student.code
+
+        },
+
+        {
+
+            headers: {
+
+                Authorization: req.headers.authorization
+
+            }
+
+        }
+
+    );
+
+}
+
+catch (err) {
+
+    console.log("Swimming session update skipped.");
+
+}
+
 res.json({
 
     success: true,
 
     message: "Attendance Recorded",
 
-    student
+    record: {
+
+        time: new Date().toLocaleTimeString(),
+
+        code: student.code,
+
+        name: student.name,
+
+        class: student.class,
+
+        status: "Present"
+
+    }
 
 });
 
