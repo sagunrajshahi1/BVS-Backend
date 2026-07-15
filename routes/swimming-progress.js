@@ -1,7 +1,11 @@
 const express = require("express");
 
 const router = express.Router();
+const {
 
+    getNepalDateTime
+
+} = require("../services/nepalTime");
 const progress = {};
 
 // =========================
@@ -86,7 +90,7 @@ router.post("/:code", (req, res) => {
 
         coach: req.user ? req.user.name : "Coach",
 
-        date: new Date()
+        date: getNepalDateTime(),
 
     };
 
@@ -368,7 +372,7 @@ router.post("/:code/change-lane", (req, res) => {
 
     student.laneHistory.unshift({
 
-        date: new Date(),
+        date: getNepalDateTime(),
 
         from: oldLane,
 

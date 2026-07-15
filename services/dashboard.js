@@ -1,5 +1,11 @@
 const sheets = require("../config/google");
+const {
 
+    getNepalDate,
+    getNepalTime,
+    getNepalDateTime
+
+} = require("./nepalTime");
 const spreadsheetId = process.env.SPREADSHEET_ID;
 
 async function dashboardSummary() {
@@ -24,7 +30,7 @@ async function dashboardSummary() {
 
     const logs = attendance.data.values || [];
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     let todayAttendance = [];
 

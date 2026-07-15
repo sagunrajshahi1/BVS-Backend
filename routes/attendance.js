@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const {
 
+    getNepalTime
+
+} = require("../services/nepalTime");
 const {
 
     findStudent,
@@ -135,7 +139,7 @@ res.json({
 
     record: {
 
-        time: new Date().toLocaleTimeString(),
+        time: getNepalTime(),
 
         code: student.code,
 

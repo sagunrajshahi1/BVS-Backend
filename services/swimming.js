@@ -1,6 +1,12 @@
 const sheets = require("../config/google");
 const { getStudents } = require("./student");
+const {
 
+    getNepalDate,
+    getNepalTime,
+    getNepalDateTime
+
+} = require("./nepalTime");
 const spreadsheetId = process.env.SPREADSHEET_ID;
 const {updateStudentLane} = require("./sheets");
 
@@ -76,7 +82,7 @@ async function saveProgress(data) {
 
     const rows = response.data.values || [];
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     for (let i = 1; i < rows.length; i++) {
 
@@ -178,7 +184,7 @@ async function saveProgress(data) {
 
 async function addNote(data) {
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     await sheets.spreadsheets.values.append({
 
@@ -270,7 +276,7 @@ async function getNotes(code) {
 
 async function markNoteFixed(data) {
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     await sheets.spreadsheets.values.update({
 
@@ -307,7 +313,7 @@ async function markNoteFixed(data) {
 }
 async function getLaneSummary(classes) {
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     // Today's attendance
     const attendanceResponse = await sheets.spreadsheets.values.get({
@@ -493,11 +499,7 @@ async function changeLane({ code, newLane, reason }) {
 
     });
 
-    const updatedTime = new Date().toLocaleString("en-US", {
-
-        timeZone: "Asia/Kathmandu"
-
-    });
+    const updatedTime = getNepalDateTime();
 
     // ---------- Student already exists ----------
     if (rowIndex !== -1) {

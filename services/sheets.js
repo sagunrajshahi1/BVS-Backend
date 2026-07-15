@@ -1,6 +1,12 @@
 const sheets = require("../config/google");
 const { getMergedClass } = require("./classMap");
+const {
 
+    getNepalDate,
+    getNepalTime,
+    getNepalDateTime
+
+} = require("./nepalTime");
 const spreadsheetId = process.env.SPREADSHEET_ID;
 let studentCache = [];
 
@@ -98,7 +104,7 @@ async function alreadyMarkedToday(code) {
 
     const rows = response.data.values || [];
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     for (let i = 1; i < rows.length; i++) {
 
@@ -121,14 +127,8 @@ async function alreadyMarkedToday(code) {
 }
 async function addAttendance(student, device) {
 
-    const now = new Date();
-
-    const date = now.toLocaleDateString("en-CA");
-
-    const time = now.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    const date = getNepalDate();
+    const time = getNepalTime();
 
     await sheets.spreadsheets.values.append({
 
@@ -174,7 +174,7 @@ async function getTodayColumn(sheetName) {
 
     const rows = response.data.values || [];
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     if (rows.length === 0) {
 
@@ -404,7 +404,7 @@ async function updateDashboard() {
     const students = rawResponse.data.values || [];
     const attendance = attendanceResponse.data.values || [];
 
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getNepalDate();
 
     const totalStudents = students.length - 1;
 
@@ -470,11 +470,7 @@ async function getTodayAttendanceCodes() {
 
     const rows = response.data.values || [];
 
-    const now = new Date();
-
-const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kathmandu"
-}).format(now);
+    const today = getNepalDate();
 
     console.log("Today:", today);
 

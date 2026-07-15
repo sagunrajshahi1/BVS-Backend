@@ -1,3 +1,9 @@
+const {
+
+    getNepalDateTime
+
+} = require("./nepalTime");
+
 let currentSession = {
 
     active: false,
@@ -28,7 +34,7 @@ function startSession(data){
 
         coach: data.coach,
 
-        startTime: new Date()
+        startTime: getNepalDateTime()
 
     };
 
