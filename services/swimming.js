@@ -417,109 +417,156 @@ console.log("Students:", students);
 
 async function changeLane({ code, newLane, reason }) {
 
-    const response = await sheets.spreadsheets.values.get({
+    // ---------- Swimming Progress ----------
+    const progressResponse = await sheets.spreadsheets.values.get({
 
         spreadsheetId,
-
         range: "SwimmingProgress!A:K"
 
     });
 
-    const rows = response.data.values || [];
+    const progressRows = progressResponse.data.values || [];
 
-    for (let i = 1; i < rows.length; i++) {
+    let rowIndex = -1;
 
-        if (rows[i][0] !== code) continue;
+    for (let i = 1; i < progressRows.length; i++) {
 
-        const currentLane = rows[i][2] || "";
+        if (progressRows[i][0] === code) {
 
-        rows[i][2] = newLane;               // C - Current Lane
-        rows[i][9] = currentLane;           // J - Previous Lane
-        rows[i][10] = reason || "";         // K - Reason
-        rows[i][8] = new Date().toLocaleString(
-
-            "en-US",
-
-            {
-
-                timeZone: "Asia/Kathmandu"
-
-            }
-
-        );
-        const rawData = await sheets.spreadsheets.values.get({
-
-    spreadsheetId,
-
-    range: "RawData!A:E"
-
-});
-
-const rawRows = rawData.data.values || [];
-
-for(let r=1;r<rawRows.length;r++){
-
-    if(rawRows[r][1] !== code){
-
-        continue;
-
-    }
-
-    rawRows[r][4] = newLane;
-
-    await sheets.spreadsheets.values.update({
-
-        spreadsheetId,
-
-        range:`RawData!E${r+1}`,
-
-        valueInputOption:"USER_ENTERED",
-
-        requestBody:{
-
-            values:[[newLane]]
+            rowIndex = i;
+            break;
 
         }
 
+    }
+
+    // ---------- RawData ----------
+    const rawResponse = await sheets.spreadsheets.values.get({
+
+        spreadsheetId,
+        range: "RawData!A:E"
+
     });
 
-    break;
+    const rawRows = rawResponse.data.values || [];
 
-}
-                                  // I - Updated
+    let student = null;
+    let rawIndex = -1;
 
-        await sheets.spreadsheets.values.update({
+    for (let i = 1; i < rawRows.length; i++) {
 
-            spreadsheetId,
+        if (rawRows[i][1] === code) {
 
-            range: `SwimmingProgress!A${i + 1}:K${i + 1}`,
+            student = rawRows[i];
+            rawIndex = i;
+            break;
 
-            valueInputOption: "USER_ENTERED",
+        }
 
-            requestBody: {
+    }
 
-                values: [rows[i]]
-
-            }
-
-        });
-
-        // Update RawData current lane
-        await updateStudentLane(code, newLane);
+    if (!student) {
 
         return {
 
-            success: true
+            success: false,
+            message: "Student not found."
 
         };
 
     }
 
+    // ---------- Update RawData Lane ----------
+    await sheets.spreadsheets.values.update({
+
+        spreadsheetId,
+
+        range: `RawData!E${rawIndex + 1}`,
+
+        valueInputOption: "USER_ENTERED",
+
+        requestBody: {
+
+            values: [[newLane]]
+
+        }
+
+    });
+
+    const updatedTime = new Date().toLocaleString("en-US", {
+
+        timeZone: "Asia/Kathmandu"
+
+    });
+
+    // ---------- Student already exists ----------
+    if (rowIndex !== -1) {
+
+        const row = progressRows[rowIndex];
+
+        const previousLane = row[2] || "";
+
+        row[2] = newLane;
+        row[8] = updatedTime;
+        row[9] = previousLane;
+        row[10] = reason || "";
+
+        await sheets.spreadsheets.values.update({
+
+            spreadsheetId,
+
+            range: `SwimmingProgress!A${rowIndex + 1}:K${rowIndex + 1}`,
+
+            valueInputOption: "USER_ENTERED",
+
+            requestBody: {
+
+                values: [row]
+
+            }
+
+        });
+
+    }
+
+    // ---------- First lane change ----------
+    else {
+
+        await sheets.spreadsheets.values.append({
+
+            spreadsheetId,
+
+            range: "SwimmingProgress!A:K",
+
+            valueInputOption: "USER_ENTERED",
+
+            requestBody: {
+
+                values: [[
+
+                    code,               // A
+                    student[2],         // B Name
+                    newLane,            // C Lane
+                    "",                 // D
+                    "",                 // E
+                    "",                 // F
+                    "",                 // G
+                    "",                 // H Coach
+                    updatedTime,        // I
+                    "",                 // J Previous Lane
+                    reason || ""        // K Reason
+
+                ]]
+
+            }
+
+        });
+
+    }
+
     return {
 
-        success: false,
-
-        message: "Student not found."
+        success: true
 
     };
 

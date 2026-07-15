@@ -9,11 +9,11 @@
   "dependencies": {
     "axios": "^1.18.1",
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^17.x.x",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "exceljs": "^4.x.x",
-    "express": "^5.x.x",
-    "googleapis": "^144.x.x",
+    "express": "^5.2.1",
+    "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.3",
     "uuid": "^11.x.x"
   },
